@@ -1,13 +1,13 @@
-import React, { useState, useRef } from 'react';
-import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ExternalLink, Github, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { getFeaturedProjects, formatTechStack } from '../utils/dataUtils';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 
-// Project images mapping
+// Enhanced project images with better quality
 const projectImages: { [key: string]: string } = {
-  'INCAMPUS': 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800',
-  'BUSSEVA KOLKATA': 'https://images.pexels.com/photos/1756957/pexels-photo-1756957.jpeg?auto=compress&cs=tinysrgb&w=800',
-  'Arvyax Wellness': 'https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=800'
+  'INCAMPUS': 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'BUSSEVA KOLKATA': 'https://images.pexels.com/photos/1756957/pexels-photo-1756957.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  'Arvyax Wellness': 'https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=1200'
 };
 
 // Helper to chunk array into groups
@@ -22,29 +22,35 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 const Projects: React.FC = () => {
   const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const featuredProjects = getFeaturedProjects();
-  const desktopProjectGroups = chunkArray(featuredProjects, 4); // 4 for desktop
-  const mobileProjectGroups = chunkArray(featuredProjects, 2); // 2 for mobile
+  const desktopProjectGroups = chunkArray(featuredProjects, 4);
+  const mobileProjectGroups = chunkArray(featuredProjects, 2);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentMobileSlide, setCurrentMobileSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const nextSlide = () => {
-    if (currentSlide < desktopProjectGroups.length - 1) {
+    if (isTransitioning || currentSlide >= desktopProjectGroups.length - 1) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
       setCurrentSlide(currentSlide + 1);
-    }
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const prevSlide = () => {
-    if (currentSlide > 0) {
+    if (isTransitioning || currentSlide <= 0) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
       setCurrentSlide(currentSlide - 1);
-    }
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const goToMobileSlide = (index: number) => {
     setCurrentMobileSlide(index);
-    // Scroll to the corresponding slide
     if (scrollContainerRef.current) {
-      const slideWidth = 320 + 32; // card width + gap
+      const slideWidth = 360 + 32;
       scrollContainerRef.current.scrollTo({
         left: index * slideWidth,
         behavior: 'smooth'
@@ -52,39 +58,65 @@ const Projects: React.FC = () => {
     }
   };
 
+  // Auto-slide functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning && desktopProjectGroups.length > 1) {
+        if (currentSlide < desktopProjectGroups.length - 1) {
+          nextSlide();
+        } else {
+          setIsTransitioning(true);
+          setTimeout(() => {
+            setCurrentSlide(0);
+            setIsTransitioning(false);
+          }, 300);
+        }
+      }
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [currentSlide, isTransitioning, desktopProjectGroups.length]);
+
   return (
-    <section id="projects" className="py-24" ref={ref}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="space-y-16">
-          <div className={`text-center transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
-            <h2 className="text-3xl sm:text-4xl font-mono font-bold mb-4">
-              PROJECTS
+    <section id="projects" className="py-24 relative overflow-hidden" ref={ref}>
+      {/* Background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-gradient-to-r from-cyan-400/10 to-blue-600/10 rounded-full animated-blob blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-72 h-72 bg-gradient-to-r from-purple-400/10 to-pink-600/10 rounded-full animated-blob blur-3xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="space-y-20">
+          <div className={`text-center transition-all duration-1000 ${isVisible ? 'reveal-animation visible' : 'reveal-animation'}`}>
+            <h2 className="text-4xl sm:text-5xl font-mono font-bold mb-6 relative group">
+              <span className="hover:gradient-text transition-all duration-500">PROJECTS</span>
+              <div className="absolute -inset-2 bg-gradient-to-r from-cyan-600/20 to-purple-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
             </h2>
-            <div className="w-16 h-px bg-black dark:bg-white mx-auto animate-scale-in animate-delay-200"></div>
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-black dark:via-white to-transparent mx-auto"></div>
           </div>
 
-          {/* Projects Container with Navigation */}
-          <div className={`relative transition-all duration-700 ${isVisible ? 'animate-fade-in animate-delay-300' : 'opacity-0'}`}>
-            {/* Desktop Navigation Arrows */}
-            <div className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10">
+          {/* Projects Container */}
+          <div className={`relative transition-all duration-1000 ${isVisible ? 'reveal-animation visible stagger-2' : 'reveal-animation'}`}>
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-20">
               <button
                 onClick={prevSlide}
                 disabled={currentSlide === 0}
-                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl"
+                className="p-4 glass-morphism rounded-full magnetic-hover glow-on-hover transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110"
                 aria-label="Previous projects"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={24} className="text-cyan-500" />
               </button>
             </div>
 
-            <div className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10">
+            <div className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-20">
               <button
                 onClick={nextSlide}
                 disabled={currentSlide === desktopProjectGroups.length - 1}
-                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl"
+                className="p-4 glass-morphism rounded-full magnetic-hover glow-on-hover transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110"
                 aria-label="Next projects"
               >
-                <ChevronRight size={20} />
+                <ChevronRight size={24} className="text-purple-500" />
               </button>
             </div>
 
@@ -92,18 +124,21 @@ const Projects: React.FC = () => {
             <div className="relative">
               {/* Desktop: 2x2 grid view */}
               <div className="hidden lg:flex justify-center">
-                <div className="grid grid-cols-2 gap-6 max-w-2xl">
+                <div className={`grid grid-cols-2 gap-8 max-w-4xl transition-all duration-500 ${
+                  isTransitioning ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'
+                }`}>
                   {(() => {
                     const projects = desktopProjectGroups[currentSlide] || [];
                     const placeholders = 4 - projects.length;
                     return [
-                      ...projects.map((project) => (
+                      ...projects.map((project, index) => (
                         <div
                           key={project.id}
-                          className="w-[280px] h-[320px] border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300 group hover-lift"
+                          className="group w-[320px] h-[400px] glass-morphism rounded-2xl overflow-hidden card-hover-effect magnetic-hover"
+                          style={{ animationDelay: `${index * 150}ms` }}
                         >
                           {/* Project Image */}
-                          <div className="project-image-container h-32 bg-gray-100 dark:bg-gray-800">
+                          <div className="project-image-container h-48 relative overflow-hidden">
                             <img
                               src={projectImages[project.name]}
                               alt={project.name}
@@ -111,56 +146,71 @@ const Projects: React.FC = () => {
                               loading="lazy"
                             />
                             <div className="project-overlay">
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-4">
                                 <a
                                   href={project.github}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                  className="p-3 glass-morphism rounded-full hover:scale-110 transition-all duration-300 glow-on-hover"
                                 >
-                                  <Github size={16} className="text-white" />
+                                  <Github size={20} className="text-white" />
                                 </a>
                                 <a
                                   href={project.demo}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                  className="p-3 glass-morphism rounded-full hover:scale-110 transition-all duration-300 glow-on-hover"
                                 >
-                                  <ExternalLink size={16} className="text-white" />
+                                  <Play size={20} className="text-white" />
                                 </a>
                               </div>
+                            </div>
+                            <div className="absolute top-4 right-4 px-3 py-1 glass-morphism rounded-full">
+                              <span className="text-xs font-mono text-white font-bold">FEATURED</span>
                             </div>
                           </div>
                           
                           <div className="flex flex-col h-full p-6">
-                            <div className="space-y-2 flex-grow">
-                              <h3 className="text-lg font-mono font-bold">
+                            <div className="space-y-3 flex-grow">
+                              <h3 className="text-xl font-mono font-bold group-hover:gradient-text transition-all duration-300">
                                 {project.name}
                               </h3>
-                              <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed line-clamp-3">
+                              <p className="text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed line-clamp-3">
                                 {project.description}
                               </p>
-                              <p className="text-xs font-mono text-gray-500 dark:text-gray-500">
-                                {formatTechStack(project.tech)}
-                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {project.tech.slice(0, 3).map((tech, techIndex) => (
+                                  <span
+                                    key={techIndex}
+                                    className="px-2 py-1 text-xs font-mono bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full border border-blue-500/20"
+                                  >
+                                    {tech}
+                                  </span>
+                                ))}
+                                {project.tech.length > 3 && (
+                                  <span className="px-2 py-1 text-xs font-mono text-gray-500">
+                                    +{project.tech.length - 3}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center space-x-3 mt-4">
+                            <div className="flex items-center space-x-3 mt-6">
                               <a
                                 href={project.github}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
+                                className="flex-1 inline-flex items-center justify-center space-x-2 font-mono text-xs glass-morphism px-4 py-2 rounded-lg modern-button magnetic-hover"
                               >
-                                <Github size={12} />
+                                <Github size={14} />
                                 <span>CODE</span>
                               </a>
                               <a
                                 href={project.demo}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
+                                className="flex-1 inline-flex items-center justify-center space-x-2 font-mono text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg modern-button magnetic-hover"
                               >
-                                <ExternalLink size={12} />
+                                <ExternalLink size={14} />
                                 <span>DEMO</span>
                               </a>
                             </div>
@@ -170,7 +220,7 @@ const Projects: React.FC = () => {
                       ...Array.from({ length: placeholders }, (_, i) => (
                         <div
                           key={`placeholder-${i}`}
-                          className="w-[280px] h-[320px] opacity-0 pointer-events-none"
+                          className="w-[320px] h-[400px] opacity-0 pointer-events-none"
                         />
                       )),
                     ];
@@ -178,23 +228,24 @@ const Projects: React.FC = () => {
                 </div>
               </div>
 
-              {/* Mobile: Horizontal scroll with 2 projects per slide */}
+              {/* Mobile: Horizontal scroll */}
               <div 
                 ref={scrollContainerRef}
-                className="lg:hidden flex gap-8 md:gap-12 overflow-x-auto pb-4 scrollbar-hide"
+                className="lg:hidden flex gap-8 overflow-x-auto pb-4 scrollbar-hide"
               >
                 {mobileProjectGroups.map((pair, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col gap-8 min-w-[340px] max-w-sm flex-shrink-0"
+                    className="flex flex-col gap-8 min-w-[360px] flex-shrink-0"
                   >
-                    {pair.map((project) => (
+                    {pair.map((project, index) => (
                       <div
                         key={project.id}
-                        className="w-[340px] h-[380px] border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300 group hover-lift"
+                        className="group w-[360px] h-[450px] glass-morphism rounded-2xl overflow-hidden card-hover-effect"
+                        style={{ animationDelay: `${index * 150}ms` }}
                       >
                         {/* Project Image */}
-                        <div className="project-image-container h-40 bg-gray-100 dark:bg-gray-800">
+                        <div className="project-image-container h-52 relative overflow-hidden">
                           <img
                             src={projectImages[project.name]}
                             alt={project.name}
@@ -202,56 +253,71 @@ const Projects: React.FC = () => {
                             loading="lazy"
                           />
                           <div className="project-overlay">
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-4">
                               <a
                                 href={project.github}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                className="p-3 glass-morphism rounded-full hover:scale-110 transition-all duration-300"
                               >
-                                <Github size={18} className="text-white" />
+                                <Github size={22} className="text-white" />
                               </a>
                               <a
                                 href={project.demo}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                className="p-3 glass-morphism rounded-full hover:scale-110 transition-all duration-300"
                               >
-                                <ExternalLink size={18} className="text-white" />
+                                <Play size={22} className="text-white" />
                               </a>
                             </div>
                           </div>
+                          <div className="absolute top-4 right-4 px-3 py-1 glass-morphism rounded-full">
+                            <span className="text-xs font-mono text-white font-bold">FEATURED</span>
+                          </div>
                         </div>
                         
-                        <div className="flex flex-col h-full p-8">
-                          <div className="space-y-2 flex-grow">
-                            <h3 className="text-xl font-mono font-bold">
+                        <div className="flex flex-col h-full p-6">
+                          <div className="space-y-3 flex-grow">
+                            <h3 className="text-xl font-mono font-bold group-hover:gradient-text transition-all duration-300">
                               {project.name}
                             </h3>
-                            <p className="text-gray-600 dark:text-gray-400 font-mono text-sm">
+                            <p className="text-gray-600 dark:text-gray-400 font-mono text-sm leading-relaxed">
                               {project.description}
                             </p>
-                            <p className="text-xs font-mono text-gray-500 dark:text-gray-500">
-                              {formatTechStack(project.tech)}
-                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {project.tech.slice(0, 4).map((tech, techIndex) => (
+                                <span
+                                  key={techIndex}
+                                  className="px-2 py-1 text-xs font-mono bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full border border-blue-500/20"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                              {project.tech.length > 4 && (
+                                <span className="px-2 py-1 text-xs font-mono text-gray-500">
+                                  +{project.tech.length - 4}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-4 mt-4">
+                          <div className="flex items-center space-x-3 mt-6">
                             <a
                               href={project.github}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
+                              className="flex-1 inline-flex items-center justify-center space-x-2 font-mono text-xs glass-morphism px-4 py-3 rounded-lg modern-button"
                             >
-                              <Github size={14} />
+                              <Github size={16} />
                               <span>CODE</span>
                             </a>
                             <a
                               href={project.demo}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
+                              className="flex-1 inline-flex items-center justify-center space-x-2 font-mono text-xs bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg modern-button"
                             >
-                              <ExternalLink size={14} />
+                              <ExternalLink size={16} />
                               <span>DEMO</span>
                             </a>
                           </div>
@@ -264,15 +330,23 @@ const Projects: React.FC = () => {
             </div>
 
             {/* Desktop Slide Indicators */}
-            <div className="hidden lg:flex justify-center mt-8 space-x-2">
+            <div className="hidden lg:flex justify-center mt-12 space-x-3">
               {desktopProjectGroups.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${
+                  onClick={() => {
+                    if (!isTransitioning) {
+                      setIsTransitioning(true);
+                      setTimeout(() => {
+                        setCurrentSlide(index);
+                        setIsTransitioning(false);
+                      }, 300);
+                    }
+                  }}
+                  className={`w-3 h-3 rounded-full transition-all duration-500 hover:scale-125 ${
                     index === currentSlide
-                      ? 'bg-black dark:bg-white'
-                      : 'bg-gray-300 dark:bg-gray-600'
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 shadow-lg'
+                      : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -285,10 +359,10 @@ const Projects: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => goToMobileSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${
+                  className={`w-3 h-3 rounded-full transition-all duration-500 hover:scale-125 ${
                     index === currentMobileSlide
-                      ? 'bg-black dark:bg-white'
-                      : 'bg-gray-300 dark:bg-gray-600'
+                      ? 'bg-gradient-to-r from-cyan-500 to-purple-500 shadow-lg'
+                      : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
