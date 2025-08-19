@@ -1,6 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { ExternalLink, Github, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getFeaturedProjects, formatTechStack } from '../utils/dataUtils';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
+
+// Project images mapping
+const projectImages: { [key: string]: string } = {
+  'INCAMPUS': 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'BUSSEVA KOLKATA': 'https://images.pexels.com/photos/1756957/pexels-photo-1756957.jpeg?auto=compress&cs=tinysrgb&w=800',
+  'Arvyax Wellness': 'https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=800'
+};
 
 // Helper to chunk array into groups
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -12,6 +20,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 }
 
 const Projects: React.FC = () => {
+  const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const featuredProjects = getFeaturedProjects();
   const desktopProjectGroups = chunkArray(featuredProjects, 4); // 4 for desktop
   const mobileProjectGroups = chunkArray(featuredProjects, 2); // 2 for mobile
@@ -44,24 +53,24 @@ const Projects: React.FC = () => {
   };
 
   return (
-    <section id="projects" className="py-24">
+    <section id="projects" className="py-24" ref={ref}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-16">
-          <div className="text-center">
+          <div className={`text-center transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
             <h2 className="text-3xl sm:text-4xl font-mono font-bold mb-4">
               PROJECTS
             </h2>
-            <div className="w-16 h-px bg-black dark:bg-white mx-auto"></div>
+            <div className="w-16 h-px bg-black dark:bg-white mx-auto animate-scale-in animate-delay-200"></div>
           </div>
 
           {/* Projects Container with Navigation */}
-          <div className="relative">
+          <div className={`relative transition-all duration-700 ${isVisible ? 'animate-fade-in animate-delay-300' : 'opacity-0'}`}>
             {/* Desktop Navigation Arrows */}
             <div className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10">
               <button
                 onClick={prevSlide}
                 disabled={currentSlide === 0}
-                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105"
+                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl"
                 aria-label="Previous projects"
               >
                 <ChevronLeft size={20} />
@@ -72,7 +81,7 @@ const Projects: React.FC = () => {
               <button
                 onClick={nextSlide}
                 disabled={currentSlide === desktopProjectGroups.length - 1}
-                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105"
+                className="p-3 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg border border-gray-200/50 dark:border-gray-600/50 text-black dark:text-white opacity-70 hover:opacity-100 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl"
                 aria-label="Next projects"
               >
                 <ChevronRight size={20} />
@@ -91,26 +100,56 @@ const Projects: React.FC = () => {
                       ...projects.map((project) => (
                         <div
                           key={project.id}
-                          className="w-[280px] h-[280px] border border-gray-200 dark:border-gray-800 p-6 flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group"
+                          className="w-[280px] h-[320px] border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300 group hover-lift"
                         >
-                          <div className="flex flex-col h-full">
-                            <div className="space-y-2">
+                          {/* Project Image */}
+                          <div className="project-image-container h-32 bg-gray-100 dark:bg-gray-800">
+                            <img
+                              src={projectImages[project.name]}
+                              alt={project.name}
+                              className="project-image w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            <div className="project-overlay">
+                              <div className="flex space-x-2">
+                                <a
+                                  href={project.github}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                >
+                                  <Github size={16} className="text-white" />
+                                </a>
+                                <a
+                                  href={project.demo}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                                >
+                                  <ExternalLink size={16} className="text-white" />
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-col h-full p-6">
+                            <div className="space-y-2 flex-grow">
                               <h3 className="text-lg font-mono font-bold">
                                 {project.name}
                               </h3>
-                              <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed">
+                              <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed line-clamp-3">
                                 {project.description}
                               </p>
                               <p className="text-xs font-mono text-gray-500 dark:text-gray-500">
                                 {formatTechStack(project.tech)}
                               </p>
                             </div>
-                            <div className="flex items-center space-x-3 mt-auto">
+                            <div className="flex items-center space-x-3 mt-4">
                               <a
                                 href={project.github}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
                               >
                                 <Github size={12} />
                                 <span>CODE</span>
@@ -119,7 +158,7 @@ const Projects: React.FC = () => {
                                 href={project.demo}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                                className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-3 py-1.5 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
                               >
                                 <ExternalLink size={12} />
                                 <span>DEMO</span>
@@ -131,7 +170,7 @@ const Projects: React.FC = () => {
                       ...Array.from({ length: placeholders }, (_, i) => (
                         <div
                           key={`placeholder-${i}`}
-                          className="w-[280px] h-[280px] opacity-0 pointer-events-none"
+                          className="w-[280px] h-[320px] opacity-0 pointer-events-none"
                         />
                       )),
                     ];
@@ -147,15 +186,45 @@ const Projects: React.FC = () => {
                 {mobileProjectGroups.map((pair, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col gap-8 min-w-[320px] max-w-xs flex-shrink-0"
+                    className="flex flex-col gap-8 min-w-[340px] max-w-sm flex-shrink-0"
                   >
                     {pair.map((project) => (
                       <div
                         key={project.id}
-                        className="w-[320px] h-[320px] border border-gray-200 dark:border-gray-800 p-8 flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group"
+                        className="w-[340px] h-[380px] border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-300 group hover-lift"
                       >
-                        <div className="flex flex-col h-full">
-                          <div className="space-y-2">
+                        {/* Project Image */}
+                        <div className="project-image-container h-40 bg-gray-100 dark:bg-gray-800">
+                          <img
+                            src={projectImages[project.name]}
+                            alt={project.name}
+                            className="project-image w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="project-overlay">
+                            <div className="flex space-x-2">
+                              <a
+                                href={project.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                              >
+                                <Github size={18} className="text-white" />
+                              </a>
+                              <a
+                                href={project.demo}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                              >
+                                <ExternalLink size={18} className="text-white" />
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col h-full p-8">
+                          <div className="space-y-2 flex-grow">
                             <h3 className="text-xl font-mono font-bold">
                               {project.name}
                             </h3>
@@ -166,12 +235,12 @@ const Projects: React.FC = () => {
                               {formatTechStack(project.tech)}
                             </p>
                           </div>
-                          <div className="flex items-center space-x-4 mt-auto">
+                          <div className="flex items-center space-x-4 mt-4">
                             <a
                               href={project.github}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
                             >
                               <Github size={14} />
                               <span>CODE</span>
@@ -180,7 +249,7 @@ const Projects: React.FC = () => {
                               href={project.demo}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                              className="inline-flex items-center space-x-2 font-mono text-xs border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-105"
                             >
                               <ExternalLink size={14} />
                               <span>DEMO</span>
@@ -200,7 +269,7 @@ const Projects: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  className={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${
                     index === currentSlide
                       ? 'bg-black dark:bg-white'
                       : 'bg-gray-300 dark:bg-gray-600'
@@ -216,7 +285,7 @@ const Projects: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => goToMobileSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  className={`w-2 h-2 rounded-full transition-all duration-300 hover:scale-125 ${
                     index === currentMobileSlide
                       ? 'bg-black dark:bg-white'
                       : 'bg-gray-300 dark:bg-gray-600'

@@ -42,18 +42,18 @@ const ScrollDots: React.FC = () => {
           <button
             key={section.id}
             onClick={() => scrollToSection(section.id)}
-            className="group relative flex items-center"
+            className="group relative flex items-center transition-transform duration-300 hover:scale-125"
             aria-label={`Go to ${section.label}`}
           >
             <div
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`w-2 h-2 rounded-full transition-all duration-300 hover:shadow-lg ${
                 activeSection === section.id
-                  ? 'bg-black dark:bg-white scale-125'
+                  ? 'bg-black dark:bg-white scale-125 animate-pulse-subtle'
                   : 'bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600'
               }`}
             />
-            <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none hidden md:block">
-              <div className="bg-black dark:bg-white text-white dark:text-black px-2 py-1 text-xs font-mono whitespace-nowrap">
+            <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none hidden md:block transform translate-x-2 group-hover:translate-x-0">
+              <div className="bg-black dark:bg-white text-white dark:text-black px-2 py-1 text-xs font-mono whitespace-nowrap rounded shadow-lg">
                 {section.label}
               </div>
             </div>

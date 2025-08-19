@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getSkillsByCategories } from '../utils/dataUtils';
 import { aboutSection } from '../data/mockData';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 
 const About: React.FC = () => {
+  const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   const skillsByCategory = getSkillsByCategories();
   const [currentCategory, setCurrentCategory] = useState(0);
 
@@ -20,21 +22,21 @@ const About: React.FC = () => {
   };
 
   return (
-    <section id="about" className="py-24">
+    <section id="about" className="py-24" ref={ref}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-16">
           {/* Header */}
-          <div className="text-center">
+          <div className={`text-center transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
             <h2 className="text-3xl sm:text-4xl font-mono font-bold mb-4">
               ABOUT ME
             </h2>
-            <div className="w-16 h-px bg-black dark:bg-white mx-auto"></div>
+            <div className="w-16 h-px bg-black dark:bg-white mx-auto animate-scale-in animate-delay-200"></div>
           </div>
           
           {/* Content Grid */}
           <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
             {/* Bio Section */}
-            <div className="space-y-6">
+            <div className={`space-y-6 transition-all duration-700 ${isVisible ? 'animate-slide-in-left animate-delay-300' : 'opacity-0 -translate-x-10'}`}>
               <div className="space-y-4">
                 <div className="border-l-2 border-black dark:border-white pl-4">
                   <h3 className="text-lg font-mono font-bold mb-3">
@@ -52,7 +54,7 @@ const About: React.FC = () => {
             </div>
             
             {/* Tech Stack Section */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className={`lg:col-span-2 space-y-8 transition-all duration-700 ${isVisible ? 'animate-slide-in-right animate-delay-400' : 'opacity-0 translate-x-10'}`}>
               <div className="border-l-2 border-black dark:border-white pl-4">
                 <h3 className="text-lg font-mono font-bold mb-6">
                   TECH STACK
@@ -63,7 +65,7 @@ const About: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={prevCategory}
-                  className="p-2 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                  className="p-2 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-110 hover:shadow-lg"
                   aria-label="Previous category"
                 >
                   <ChevronLeft size={16} />
@@ -93,7 +95,7 @@ const About: React.FC = () => {
                 
                 <button
                   onClick={nextCategory}
-                  className="p-2 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                  className="p-2 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 hover:scale-110 hover:shadow-lg"
                   aria-label="Next category"
                 >
                   <ChevronRight size={16} />
@@ -106,13 +108,13 @@ const About: React.FC = () => {
                   {skillsByCategory[currentCategory].skills.map((skill, index) => (
                     <div
                       key={skill.name}
-                      className="flex flex-col items-center justify-center p-4 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 animate-fade-in"
+                      className="flex flex-col items-center justify-center p-4 border border-gray-300 dark:border-gray-700 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-300 animate-fade-in hover-lift cursor-pointer"
                       style={{
                         animationDelay: `${index * 100}ms`
                       }}
                       title={skill.name}
                     >
-                      <i className={`${skill.icon} text-2xl mb-2`}></i>
+                      <i className={`${skill.icon} text-2xl mb-2 transition-transform duration-300 hover:scale-110`}></i>
                       <span className="font-mono text-xs font-medium text-center">{skill.name}</span>
                     </div>
                   ))}
@@ -130,7 +132,7 @@ const About: React.FC = () => {
           
           {/* Bottom Accent Line */}
           <div className="flex justify-center">
-            <div className="w-32 h-px bg-gray-300 dark:bg-gray-700"></div>
+            <div className={`w-32 h-px bg-gray-300 dark:bg-gray-700 transition-all duration-700 ${isVisible ? 'animate-scale-in animate-delay-700' : 'opacity-0 scale-x-0'}`}></div>
           </div>
         </div>
       </div>

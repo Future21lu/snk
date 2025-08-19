@@ -1,24 +1,25 @@
 import React, {} from 'react';
 import { Mail, Github, Linkedin } from 'lucide-react';
 import { personalInfo } from '../data/mockData';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
 
 const Contact: React.FC = () => {
- 
+  const [ref, isVisible] = useIntersectionObserver({ threshold: 0.1 });
   
   return (
     <>
-      <section id="contact" className="py-24">
+      <section id="contact" className="py-24" ref={ref}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-16">
-            <div className="text-center">
+            <div className={`text-center transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
               <h2 className="text-3xl sm:text-4xl font-mono font-bold mb-4">
                 GET IN TOUCH
               </h2>
-              <div className="w-16 h-px bg-black dark:bg-white mx-auto"></div>
+              <div className="w-16 h-px bg-black dark:bg-white mx-auto animate-scale-in animate-delay-200"></div>
             </div>
             
             <div className="grid md:grid-cols-2 gap-12 md:gap-16">
-              <div className="space-y-8">
+              <div className={`space-y-8 transition-all duration-700 ${isVisible ? 'animate-slide-in-left animate-delay-300' : 'opacity-0 -translate-x-10'}`}>
                 <div className="space-y-4">
                   <h3 className="text-xl font-mono font-bold">
                     LET'S CONNECT
@@ -32,27 +33,27 @@ const Contact: React.FC = () => {
                 <div className="space-y-4">
                   <a
                     href={`mailto:${personalInfo.email}`}
-                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-all duration-300 hover:translate-x-2 group"
                   >
-                    <Mail size={16} />
+                    <Mail size={16} className="group-hover:scale-110 transition-transform duration-300" />
                     <span>{personalInfo.email.toUpperCase()}</span>
                   </a>
                   <a
                     href={personalInfo.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-all duration-300 hover:translate-x-2 group"
                   >
-                    <Github size={16} />
+                    <Github size={16} className="group-hover:scale-110 transition-transform duration-300" />
                     <span>GITHUB</span>
                   </a>
                   <a
                     href={personalInfo.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
+                    className="flex items-center space-x-3 font-mono text-sm hover:text-gray-600 dark:hover:text-gray-400 transition-all duration-300 hover:translate-x-2 group"
                   >
-                    <Linkedin size={16} />
+                    <Linkedin size={16} className="group-hover:scale-110 transition-transform duration-300" />
                     <span>LINKEDIN</span>
                   </a>
                 </div>
@@ -67,7 +68,7 @@ const Contact: React.FC = () => {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open GitHub profile"
-        className="fixed bottom-6 right-6 z-50 text-black dark:text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-gray-400 transition-transform hover:scale-110"
+        className="fixed bottom-6 right-6 z-50 text-black dark:text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-gray-400 transition-all duration-300 hover:scale-110 hover:shadow-xl animate-float bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50"
         tabIndex={0}
       >
         {/* Minimal, outlined, transparent GitHub SVG icon */}
